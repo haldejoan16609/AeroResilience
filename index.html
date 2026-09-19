@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroResilience - Dashboard & Impact Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1B5E20;
+            --primary-light: #4CAF50;
+            --bg-color: #F4F6F4;
+            --card-bg: #FFFFFF;
+            --text-dark: #2D3748;
+            --text-muted: #718096;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-box {
+            background: #E8F5E9;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        form label {
+            display: block;
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        form input, form select, form button {
+            width: 100%;
+            padding: 0.6rem;
+            margin-top: 0.3rem;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        form button {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            border: none;
+            margin-top: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        form button:hover {
+            background-color: #144718;
+        }
+
+        .log-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .log-item {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #EDF2F7;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .project-summary {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #4A5568;
+        }
+
+        .project-summary ul {
+            padding-left: 1.2rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AeroResilience Dashboard</h1>
+        <span>Clean Air & Climate Resilience Platform</span>
+    </header>
+
+    <div class="container">
+        <!-- Main Content Area -->
+        <div>
+            <!-- Live Status Cards -->
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value" id="aqi-val">42</div>
+                    <div class="metric-label">Air Quality Index (Good)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="tree-count">128</div>
+                    <div class="metric-label">Trees Planted</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">1.4 Tn</div>
+                    <div class="metric-label">CO2 Offset / Year</div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="card">
+                <h2>Air Quality Monitoring Trend (PM2.5)</h2>
+                <canvas id="airChart" height="120"></canvas>
+            </div>
+
+            <!-- Action Logging Form -->
+            <div class="card">
+                <h2>Log Community Climate Action</h2>
+                <form id="actionForm">
+                    <label for="actionType">Action Type</label>
+                    <select id="actionType" required>
+                        <option value="Tree Planting">Tree Planting</option>
+                        <option value="Air Quality Monitoring">Air Quality Monitoring</option>
+                        <option value="Community Clean Drive">Community Clean Drive</option>
+                    </select>
+
+                    <label for="location">Location / District</label>
+                    <input type="text" id="location" placeholder="e.g. Green Park Zone 3" required>
+
+                    <label for="count">Impact Metric (e.g., number of trees planted)</label>
+                    <input type="number" id="count" min="1" value="1" required>
+
+                    <button type="submit">Submit Impact Report</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar / Project Summary -->
+        <div>
+            <div class="card">
+                <h2>About AeroResilience</h2>
+                <div class="project-summary">
+                    <p>AeroResilience is an AI-powered platform designed for <strong>Track 2 — Clean Air & Climate Resilience</strong>.</p>
+                    <p><strong>Key Capabilities:</strong></p>
+                    <ul>
+                        <li>Real-time air pollution tracking (PM2.5 & AQI).</li>
+                        <li>Community action logging for tree planting and environmental drives.</li>
+                        <li>Predictive analytics for microclimate health mapping.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Recent Action Logs</h2>
+                <ul class="log-list" id="actionLogs">
+                    <li class="log-item"><span>🌱 5 Trees in North Zone</span> <small>Today</small></li>
+                    <li class="log-item"><span>📊 Sensor Active at Station 2</span> <small>Yesterday</small></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart.js Air Quality Chart
+        const ctx = document.getElementById('airChart').getContext('2d');
+        const airChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'PM2.5 Level (µg/m³)',
+                    data: [18, 22, 19, 15, 12, 14, 10],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // Form Handler to update metrics dynamically
+        document.getElementById('actionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('actionType').value;
+            const location = document.getElementById('location').value;
+            const count = parseInt(document.getElementById('count').value);
+
+            // Update Total Counter
+            if (type === 'Tree Planting') {
+                const totalElem = document.getElementById('tree-count');
+                totalElem.innerText = parseInt(totalElem.innerText) + count;
+            }
+
+            // Append to Activity List
+            const logList = document.getElementById('actionLogs');
+            const newLog = document.createElement('li');
+            newLog.className = 'log-item';
+            newLog.innerHTML = `<span>🌱 ${count} ${type} at ${location}</span> <small>Just now</small>`;
+            logList.insertBefore(newLog, logList.firstChild);
+
+            // Reset Form
+            this.reset();
+        });
+    </script>
+</body>
+</html>
