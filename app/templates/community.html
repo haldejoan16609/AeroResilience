@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Community{% endblock %}
+{% block page_title %}Community{% endblock %}
+{% block page_subtitle %}Log environmental actions & track collective impact{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+
+    <!-- ═══════════ IMPACT STATS ═══════════ -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="glass rounded-2xl p-5 card-hover text-center">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg shadow-emerald-500/25">🌳</div>
+            <span id="statTotalImpact" class="text-3xl font-extrabold text-white block">--</span>
+            <span class="text-xs text-slate-400 mt-1 block">Total Impact Points</span>
+        </div>
+        <div class="glass rounded-2xl p-5 card-hover text-center">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg shadow-cyan-500/25">📋</div>
+            <span id="statTotalActions" class="text-3xl font-extrabold text-white block">--</span>
+            <span class="text-xs text-slate-400 mt-1 block">Actions Logged</span>
+        </div>
+        <div class="glass rounded-2xl p-5 card-hover text-center">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg shadow-violet-500/25">👥</div>
+            <span id="statContributors" class="text-3xl font-extrabold text-white block">--</span>
+            <span class="text-xs text-slate-400 mt-1 block">Contributors</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+        <!-- ═══════════ LOG FORM (2 cols) ═══════════ -->
+        <div class="lg:col-span-2">
+            <div class="glass rounded-2xl p-6 card-hover">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-lg shadow-lg shadow-emerald-500/25">🌱</div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Log Climate Action</h3>
+                        <p class="text-xs text-slate-500">Every action counts</p>
+                    </div>
+                </div>
+
+                <form id="actionForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Action Type</label>
+                        <select id="actionType" required
+                                class="w-full bg-slate-800/80 border border-slate-700/50 text-sm text-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition">
+                            <option value="Tree Planting">🌳 Tree Planting</option>
+                            <option value="Air Quality Monitoring">📊 Air Quality Monitoring</option>
+                            <option value="Community Clean Drive">🧹 Community Clean Drive</option>
+                            <option value="Cycling/Walking Commute">🚴 Cycling/Walking Commute</option>
+                            <option value="Waste Segregation">♻️ Waste Segregation</option>
+                            <option value="Energy Conservation">💡 Energy Conservation</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Location / Area</label>
+                        <input type="text" id="actionLocation" required placeholder="e.g. Green Park, Zone 3"
+                               class="w-full bg-slate-800/80 border border-slate-700/50 text-sm text-slate-200 rounded-xl px-4 py-2.5 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Impact Value (count)</label>
+                        <input type="number" id="actionCount" required min="1" value="1"
+                               class="w-full bg-slate-800/80 border border-slate-700/50 text-sm text-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Your Name</label>
+                        <input type="text" id="actionContributor" placeholder="Anonymous"
+                               class="w-full bg-slate-800/80 border border-slate-700/50 text-sm text-slate-200 rounded-xl px-4 py-2.5 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Description (optional)</label>
+                        <textarea id="actionDesc" rows="2" placeholder="Brief description of your action..."
+                                  class="w-full bg-slate-800/80 border border-slate-700/50 text-sm text-slate-200 rounded-xl px-4 py-2.5 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                            class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-sm hover:from-emerald-500 hover:to-teal-500 transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 active:scale-[0.98]">
+                        Submit Impact Report
+                    </button>
+                </form>
+
+                <!-- Success message -->
+                <div id="successMsg" class="hidden mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-sm text-emerald-300 text-center">
+                    ✅ Action logged successfully! Thank you for making a difference.
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ ACTIVITY FEED (3 cols) ═══════════ -->
+        <div class="lg:col-span-3">
+            <div class="glass rounded-2xl p-6 card-hover">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-lg shadow-lg shadow-blue-500/25">📜</div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Activity Timeline</h3>
+                            <p class="text-xs text-slate-500">Recent community contributions</p>
+                        </div>
+                    </div>
+                    <button onclick="loadActivity()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-700 transition">
+                        Refresh
+                    </button>
+                </div>
+
+                <div id="activityTimeline" class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                    <div class="shimmer h-16 rounded-xl"></div>
+                    <div class="shimmer h-16 rounded-xl"></div>
+                    <div class="shimmer h-16 rounded-xl"></div>
+                </div>
+            </div>
+
+            <!-- Impact Breakdown -->
+            <div class="glass rounded-2xl p-6 card-hover mt-4">
+                <h3 class="text-base font-bold text-white mb-4">Impact Breakdown</h3>
+                <div id="impactBreakdown" class="space-y-3">
+                    <div class="shimmer h-8 rounded-lg"></div>
+                    <div class="shimmer h-8 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStats();
+        loadActivity();
+
+        document.getElementById('actionForm').addEventListener('submit', submitAction);
+    });
+
+    async function submitAction(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = 'Submitting...';
+
+        try {
+            const payload = {
+                action_type: document.getElementById('actionType').value,
+                location: document.getElementById('actionLocation').value,
+                impact_value: parseInt(document.getElementById('actionCount').value),
+                contributor: document.getElementById('actionContributor').value || 'Anonymous',
+                description: document.getElementById('actionDesc').value || null,
+            };
+
+            const res = await fetch('/api/actions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) throw new Error('Failed');
+
+            // Show success
+            document.getElementById('successMsg').classList.remove('hidden');
+            document.getElementById('actionForm').reset();
+            setTimeout(() => document.getElementById('successMsg').classList.add('hidden'), 3000);
+
+            // Refresh data
+            await Promise.all([loadStats(), loadActivity()]);
+        } catch (err) {
+            alert('Failed to submit. Please try again.');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Submit Impact Report';
+        }
+    }
+
+    async function loadStats() {
+        try {
+            const data = await apiFetch('/api/actions/stats');
+            const s = data.stats;
+            animateCounter(document.getElementById('statTotalImpact'), s.total_impact);
+            animateCounter(document.getElementById('statTotalActions'), s.total_actions);
+            animateCounter(document.getElementById('statContributors'), s.total_contributors);
+
+            // Breakdown
+            const container = document.getElementById('impactBreakdown');
+            if (s.breakdown.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">No data yet. Start logging actions!</p>';
+                return;
+            }
+            const maxImpact = Math.max(...s.breakdown.map(b => b.impact));
+            const icons = {
+                'Tree Planting': '🌳',
+                'Air Quality Monitoring': '📊',
+                'Community Clean Drive': '🧹',
+                'Cycling/Walking Commute': '🚴',
+                'Waste Segregation': '♻️',
+                'Energy Conservation': '💡',
+            };
+            container.innerHTML = s.breakdown.map(b => `
+                <div>
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-slate-300">${icons[b.type] || '📌'} ${b.type}</span>
+                        <span class="text-slate-400">${b.count} actions · <span class="text-white font-semibold">${b.impact}</span> impact</span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700" style="width: ${(b.impact / maxImpact) * 100}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('Stats error:', e);
+        }
+    }
+
+    async function loadActivity() {
+        try {
+            const data = await apiFetch('/api/actions?limit=15');
+            const container = document.getElementById('activityTimeline');
+
+            if (data.actions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500">
+                        <span class="text-4xl block mb-3">🌍</span>
+                        <p class="text-sm font-medium">No actions logged yet</p>
+                        <p class="text-xs mt-1">Be the first to make an impact!</p>
+                    </div>`;
+                return;
+            }
+
+            const icons = {
+                'Tree Planting': '🌳',
+                'Air Quality Monitoring': '📊',
+                'Community Clean Drive': '🧹',
+                'Cycling/Walking Commute': '🚴',
+                'Waste Segregation': '♻️',
+                'Energy Conservation': '💡',
+            };
+
+            container.innerHTML = data.actions.map(a => {
+                const dt = a.created_at ? new Date(a.created_at) : new Date();
+                const timeAgo = getTimeAgo(dt);
+                return `
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 transition group">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+                        ${icons[a.action_type] || '📌'}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-white">${a.impact_value} × ${a.action_type}</p>
+                            <span class="text-[10px] text-slate-500 flex-shrink-0 ml-2">${timeAgo}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">📍 ${a.location} · 👤 ${a.contributor}</p>
+                        ${a.description ? `<p class="text-xs text-slate-500 mt-1 truncate">${a.description}</p>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        } catch (e) {
+            console.error('Activity error:', e);
+        }
+    }
+
+    function getTimeAgo(date) {
+        const diff = (Date.now() - date.getTime()) / 1000;
+        if (diff < 60) return 'Just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+        return `${Math.floor(diff / 86400)}d ago`;
+    }
+</script>
+{% endblock %}

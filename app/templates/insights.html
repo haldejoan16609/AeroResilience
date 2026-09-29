@@ -1,0 +1,732 @@
+{% extends "base.html" %}
+
+{% block title %}AI Insights{% endblock %}
+{% block page_title %}AI Insights{% endblock %}
+{% block page_subtitle %}Machine learning-powered environmental analysis{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+
+    <!-- ═══════════ AI FORECAST ═══════════ -->
+    <div class="glass rounded-2xl p-6 card-hover">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-lg shadow-lg shadow-violet-500/25">🤖</div>
+            <div>
+                <h3 class="text-lg font-bold text-white">AQI Forecast — 72-Hour Prediction</h3>
+                <p class="text-xs text-slate-500">Polynomial regression + exponential smoothing model</p>
+            </div>
+        </div>
+        <div class="chart-container" style="height: 280px;">
+            <canvas id="forecastChart"></canvas>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- ═══════════ VULNERABILITY ASSESSMENT ═══════════ -->
+        <div class="glass rounded-2xl p-6 card-hover">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-lg shadow-lg shadow-amber-500/25">🛡️</div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Climate Vulnerability Index</h3>
+                    <p class="text-xs text-slate-500">Composite risk assessment</p>
+                </div>
+            </div>
+
+            <!-- Score Ring -->
+            <div class="flex items-center justify-center my-6">
+                <div class="relative">
+                    <svg class="w-40 h-40 transform -rotate-90" viewBox="0 0 160 160">
+                        <circle cx="80" cy="80" r="70" fill="none" stroke="#1e293b" stroke-width="10"/>
+                        <circle id="vulnRing" cx="80" cy="80" r="70" fill="none" stroke="#10B981" stroke-width="10"
+                                stroke-dasharray="440" stroke-dashoffset="440" stroke-linecap="round"
+                                style="transition: stroke-dashoffset 1.5s ease-out, stroke 0.5s;"/>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span id="vulnScore" class="text-3xl font-extrabold text-white">--</span>
+                        <span id="vulnLevel" class="text-xs font-medium text-emerald-400">Loading</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Factor bars -->
+            <div id="vulnFactors" class="space-y-3">
+                <div class="shimmer h-8 rounded-lg"></div>
+                <div class="shimmer h-8 rounded-lg"></div>
+                <div class="shimmer h-8 rounded-lg"></div>
+            </div>
+
+            <div id="vulnAdvice" class="mt-4 p-3 rounded-xl bg-slate-800/50 text-xs text-slate-300 border border-slate-700/30">
+                <span class="shimmer inline-block w-full h-4 rounded"></span>
+            </div>
+        </div>
+
+        <!-- ═══════════ POLLUTION SOURCES ═══════════ -->
+        <div class="glass rounded-2xl p-6 card-hover">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-lg shadow-lg shadow-rose-500/25">🔬</div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Pollution Source Attribution</h3>
+                    <p class="text-xs text-slate-500">AI-estimated source contributions</p>
+                </div>
+            </div>
+            <div class="chart-container flex items-center justify-center" style="height: 200px;">
+                <canvas id="sourcesChart"></canvas>
+            </div>
+            <div id="sourcesList" class="mt-4 space-y-2">
+                <div class="shimmer h-6 rounded-lg"></div>
+                <div class="shimmer h-6 rounded-lg"></div>
+                <div class="shimmer h-6 rounded-lg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ AI INSIGHTS FEED ═══════════ -->
+    <div class="glass rounded-2xl p-6 card-hover">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-lg shadow-lg shadow-cyan-500/25">💡</div>
+            <div>
+                <h3 class="text-lg font-bold text-white">AI-Generated Insights</h3>
+                <p class="text-xs text-slate-500">Real-time analysis and recommendations</p>
+            </div>
+        </div>
+        <div id="insightsFeed" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="shimmer h-24 rounded-xl"></div>
+            <div class="shimmer h-24 rounded-xl"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════ ANOMALY DETECTION ═══════════ -->
+    <div class="glass rounded-2xl p-6 card-hover">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-lg shadow-lg shadow-red-500/25">🚨</div>
+            <div>
+                <h3 class="text-lg font-bold text-white">Anomaly Detection</h3>
+                <p class="text-xs text-slate-500">Z-score & IQR-based spike detection</p>
+            </div>
+        </div>
+        <div id="anomaliesContainer" class="space-y-3">
+            <div class="shimmer h-16 rounded-xl"></div>
+            <div class="shimmer h-16 rounded-xl"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════ CORRELATION HEATMAP ═══════════ -->
+    <div class="glass rounded-2xl p-6 card-hover">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-lg shadow-lg shadow-pink-500/25">📊</div>
+            <div>
+                <h3 class="text-lg font-bold text-white">Correlation Heatmap</h3>
+                <p class="text-xs text-slate-500">Pearson correlation matrix across environmental variables</p>
+            </div>
+        </div>
+        <div class="flex justify-center overflow-x-auto">
+            <canvas id="heatmapCanvas" width="500" height="500"></canvas>
+        </div>
+        <div id="correlationInsights" class="mt-5 space-y-2">
+            <div class="shimmer h-6 rounded-lg"></div>
+            <div class="shimmer h-6 rounded-lg"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════ HEALTH IMPACT CALCULATOR ═══════════ -->
+    <div class="glass rounded-2xl p-6 card-hover">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-700 flex items-center justify-center text-lg shadow-lg shadow-red-500/25">🏥</div>
+            <div>
+                <h3 class="text-lg font-bold text-white">Health Impact Calculator</h3>
+                <p class="text-xs text-slate-500">WHO/ICMR-based exposure risk estimation (per 1M population)</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4 mb-5 p-3 rounded-xl bg-slate-800/50 border border-slate-700/30">
+            <span class="text-xs text-slate-400">Risk Level:</span>
+            <span id="healthRiskBadge" class="text-sm font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-400">--</span>
+            <span class="text-xs text-slate-500 ml-auto">Avg PM2.5: <strong id="healthAvgPM" class="text-white">--</strong> µg/m³ (WHO limit: 15)</span>
+        </div>
+        <div id="healthImpactCards" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="shimmer h-24 rounded-xl"></div>
+            <div class="shimmer h-24 rounded-xl"></div>
+            <div class="shimmer h-24 rounded-xl"></div>
+            <div class="shimmer h-24 rounded-xl"></div>
+            <div class="shimmer h-24 rounded-xl"></div>
+            <div class="shimmer h-24 rounded-xl"></div>
+        </div>
+        <div class="mt-5">
+            <h4 class="text-sm font-semibold text-white mb-3">Vulnerable Groups — Risk Multipliers</h4>
+            <div id="vulnerableGroups" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="shimmer h-16 rounded-lg"></div>
+                <div class="shimmer h-16 rounded-lg"></div>
+            </div>
+        </div>
+        <p class="text-[10px] text-slate-600 mt-4">Methodology: WHO Global Burden of Disease + ICMR concentration-response functions</p>
+    </div>
+
+    <!-- ═══════════ FORMAL DATA SCIENCE MODELS ═══════════ -->
+    <div class="glass rounded-2xl p-6 card-hover lg:col-span-2">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-700 flex items-center justify-center text-lg shadow-lg shadow-indigo-500/25">🤖</div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Machine Learning Analytics</h3>
+                    <p class="text-xs text-slate-500">Powered by scikit-learn (Linear & Logistic Regression)</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <span class="px-2 py-1 bg-indigo-500/10 text-indigo-400 text-[10px] rounded border border-indigo-500/20">Regression</span>
+                <span class="px-2 py-1 bg-purple-500/10 text-purple-400 text-[10px] rounded border border-purple-500/20">Classification</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Classification Risk -->
+            <div class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+                <h4 class="text-sm font-semibold text-white mb-4">Severe Risk Classifier (Logistic Regression)</h4>
+                <div id="classificationResult" class="flex flex-col items-center justify-center py-4">
+                    <div class="shimmer h-20 w-full rounded-xl mb-2"></div>
+                </div>
+            </div>
+
+            <!-- Regression Importance -->
+            <div class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+                <h4 class="text-sm font-semibold text-white mb-1">Feature Importance (Multivariate Regression)</h4>
+                <p class="text-xs text-slate-500 mb-4">How weather factors impact AQI magnitude</p>
+                <div id="regressionFeatures" class="space-y-3">
+                    <div class="shimmer h-8 rounded-lg w-full"></div>
+                    <div class="shimmer h-8 rounded-lg w-full"></div>
+                    <div class="shimmer h-8 rounded-lg w-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ WHAT-IF SIMULATOR ═══════════ -->
+    <div class="glass rounded-2xl p-6 card-hover">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-700 flex items-center justify-center text-lg shadow-lg shadow-emerald-500/25">🧪</div>
+            <div>
+                <h3 class="text-lg font-bold text-white">What-If Policy Simulator</h3>
+                <p class="text-xs text-slate-500">Model the impact of environmental interventions on air quality</p>
+            </div>
+        </div>
+        <!-- Sliders -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 rounded-xl bg-slate-800/40 border border-slate-700/30">
+            <div>
+                <label class="text-xs text-slate-400 block mb-1">🌳 Trees to Plant</label>
+                <input type="range" id="simTrees" min="1000" max="100000" value="10000" step="1000" class="w-full accent-emerald-500">
+                <span id="simTreesVal" class="text-xs text-emerald-400 font-medium">10,000</span>
+            </div>
+            <div>
+                <label class="text-xs text-slate-400 block mb-1">🚗 Traffic Reduction %</label>
+                <input type="range" id="simTraffic" min="5" max="80" value="30" class="w-full accent-cyan-500">
+                <span id="simTrafficVal" class="text-xs text-cyan-400 font-medium">30%</span>
+            </div>
+            <div>
+                <label class="text-xs text-slate-400 block mb-1">🏭 Industrial Control %</label>
+                <input type="range" id="simIndustrial" min="5" max="80" value="25" class="w-full accent-amber-500">
+                <span id="simIndustrialVal" class="text-xs text-amber-400 font-medium">25%</span>
+            </div>
+            <div>
+                <label class="text-xs text-slate-400 block mb-1">🌿 Green Cover Increase %</label>
+                <input type="range" id="simGreen" min="5" max="50" value="15" class="w-full accent-green-500">
+                <span id="simGreenVal" class="text-xs text-green-400 font-medium">15%</span>
+            </div>
+        </div>
+        <button onclick="runSimulation()" class="mb-6 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98]">
+            Run Simulation
+        </button>
+        <div id="simResults" class="space-y-3">
+            <div class="shimmer h-16 rounded-xl"></div>
+            <div class="shimmer h-16 rounded-xl"></div>
+            <div class="shimmer h-16 rounded-xl"></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let forecastChart, sourcesChart;
+    let currentCity = document.getElementById('globalCitySelect').value;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initInsightCharts();
+        loadAllInsights();
+
+        document.getElementById('globalCitySelect').addEventListener('change', (e) => {
+            currentCity = e.target.value;
+            loadAllInsights();
+        });
+    });
+
+    function initInsightCharts() {
+        // Forecast chart
+        forecastChart = new Chart(document.getElementById('forecastChart').getContext('2d'), {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: {
+                    legend: { display: true, labels: { usePointStyle: true, font: { size: 11 } } },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        borderColor: 'rgba(139, 92, 246, 0.3)',
+                        borderWidth: 1,
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { maxTicksLimit: 12, font: { size: 10 } } },
+                    y: {
+                        grid: { color: 'rgba(51, 65, 85, 0.2)' },
+                        ticks: { font: { size: 10 } },
+                        suggestedMin: 0,
+                    }
+                },
+                elements: { point: { radius: 0, hoverRadius: 4 }, line: { tension: 0.3 } }
+            }
+        });
+
+        // Sources chart
+        sourcesChart = new Chart(document.getElementById('sourcesChart').getContext('2d'), {
+            type: 'polarArea',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    r: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { display: false },
+                    }
+                }
+            }
+        });
+    }
+
+    // Slider live labels
+    ['simTrees','simTraffic','simIndustrial','simGreen'].forEach(id => {
+        const el = document.getElementById(id);
+        const lbl = document.getElementById(id + 'Val');
+        if (el && lbl) el.addEventListener('input', () => {
+            lbl.innerText = id === 'simTrees' ? parseInt(el.value).toLocaleString() : el.value + '%';
+        });
+    });
+
+    async function loadAllInsights() {
+        await Promise.all([
+            loadForecast(),
+            loadVulnerability(),
+            loadSources(),
+            loadInsightsFeed(),
+            loadAnomalies(),
+            loadCorrelation(),
+            loadHealthImpact(),
+            loadDSModels(),
+            runSimulation(),
+        ]);
+    }
+
+    async function loadForecast() {
+        try {
+            const data = await apiFetch(`/api/forecast/${currentCity}?hours=72`);
+            const step = 3;
+            const filtered = data.forecast.filter((_, i) => i % step === 0);
+
+            forecastChart.data.labels = filtered.map(f => f.hour_label);
+            forecastChart.data.datasets = [
+                {
+                    label: 'Predicted AQI',
+                    data: filtered.map(f => f.predicted_aqi),
+                    borderColor: '#8B5CF6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    borderWidth: 2,
+                },
+                {
+                    label: 'Upper Bound',
+                    data: filtered.map(f => f.confidence_high),
+                    borderColor: 'rgba(239, 68, 68, 0.3)',
+                    borderDash: [5, 5],
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: false,
+                },
+                {
+                    label: 'Lower Bound',
+                    data: filtered.map(f => f.confidence_low),
+                    borderColor: 'rgba(16, 185, 129, 0.3)',
+                    borderDash: [5, 5],
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: '-1',
+                    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+                },
+            ];
+            forecastChart.update();
+        } catch (e) {
+            console.error('Forecast error:', e);
+        }
+    }
+
+    async function loadVulnerability() {
+        try {
+            const data = await apiFetch(`/api/vulnerability/${currentCity}`);
+            const a = data.assessment;
+
+            // Animate ring
+            const ring = document.getElementById('vulnRing');
+            const offset = 440 - (440 * a.score / 100);
+            ring.style.strokeDashoffset = offset;
+
+            const colors = { Low: '#10B981', Moderate: '#F59E0B', High: '#F97316', Critical: '#EF4444' };
+            ring.style.stroke = colors[a.level] || '#10B981';
+
+            document.getElementById('vulnScore').innerText = a.score;
+            const levelEl = document.getElementById('vulnLevel');
+            levelEl.innerText = a.level;
+            levelEl.style.color = colors[a.level] || '#10B981';
+
+            // Factors
+            document.getElementById('vulnFactors').innerHTML = a.factors.map(f => `
+                <div>
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-slate-400">${f.name} <span class="text-slate-600">(${f.weight})</span></span>
+                        <span class="font-semibold text-slate-200">${f.score}</span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-1000" style="width: ${f.score}%; background: ${f.score > 70 ? '#EF4444' : f.score > 40 ? '#F59E0B' : '#10B981'}"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('vulnAdvice').innerHTML = `<span class="text-emerald-400 font-medium">Recommendation:</span> ${a.recommendation}`;
+        } catch (e) {
+            console.error('Vulnerability error:', e);
+        }
+    }
+
+    async function loadSources() {
+        try {
+            const data = await apiFetch(`/api/sources/${currentCity}`);
+            sourcesChart.data.labels = data.sources.map(s => s.source);
+            sourcesChart.data.datasets[0].data = data.sources.map(s => s.percentage);
+            sourcesChart.data.datasets[0].backgroundColor = data.sources.map(s => s.color + 'AA');
+            sourcesChart.update();
+
+            document.getElementById('sourcesList').innerHTML = data.sources.map(s => `
+                <div class="flex items-center gap-3">
+                    <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: ${s.color}"></div>
+                    <span class="text-xs text-slate-300 flex-1">${s.source}</span>
+                    <span class="text-xs font-semibold text-white">${s.percentage}%</span>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('Sources error:', e);
+        }
+    }
+
+    async function loadInsightsFeed() {
+        try {
+            const data = await apiFetch(`/api/insights/${currentCity}`);
+            const typeStyles = {
+                positive: 'border-emerald-500/30 bg-emerald-500/5',
+                warning:  'border-amber-500/30 bg-amber-500/5',
+                danger:   'border-red-500/30 bg-red-500/5',
+                info:     'border-cyan-500/30 bg-cyan-500/5',
+            };
+            document.getElementById('insightsFeed').innerHTML = data.insights.map(i => `
+                <div class="p-4 rounded-xl border ${typeStyles[i.type] || typeStyles.info}">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-lg">${i.icon}</span>
+                        <h4 class="text-sm font-semibold text-white">${i.title}</h4>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">${i.text}</p>
+                </div>
+            `).join('') || '<p class="text-sm text-slate-500 col-span-2 text-center py-6">No insights available at the moment.</p>';
+        } catch (e) {
+            console.error('Insights error:', e);
+        }
+    }
+
+    async function loadAnomalies() {
+        try {
+            const data = await apiFetch(`/api/anomalies/${currentCity}`);
+            const container = document.getElementById('anomaliesContainer');
+            if (data.anomalies.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <span class="text-3xl">✅</span>
+                        <p class="text-sm mt-2">No anomalies detected in the past 7 days</p>
+                        <p class="text-xs text-slate-600 mt-1">The system continuously monitors for unusual pollution spikes</p>
+                    </div>`;
+                return;
+            }
+            const sevColors = { Critical: 'border-red-500/40 bg-red-500/5', Warning: 'border-amber-500/40 bg-amber-500/5', Alert: 'border-cyan-500/40 bg-cyan-500/5' };
+            container.innerHTML = data.anomalies.map(a => `
+                <div class="p-4 rounded-xl border ${sevColors[a.severity] || sevColors.Alert}">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-semibold ${a.severity === 'Critical' ? 'text-red-400' : a.severity === 'Warning' ? 'text-amber-400' : 'text-cyan-400'}">${a.severity}</span>
+                        <span class="text-[10px] text-slate-500">${new Date(a.timestamp).toLocaleString()}</span>
+                    </div>
+                    <p class="text-sm text-white font-medium">AQI spiked to ${a.aqi} <span class="text-xs text-slate-400">(expected: ${a.expected_range})</span></p>
+                    <p class="text-xs text-slate-400 mt-1">Likely cause: ${a.possible_cause}</p>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('Anomalies error:', e);
+        }
+    }
+
+    // ── Correlation Heatmap ──────────────────────────────────────
+    async function loadCorrelation() {
+        try {
+            const data = await apiFetch(`/api/correlation/${currentCity}`);
+            const c = data.correlations;
+            const canvas = document.getElementById('heatmapCanvas');
+            const ctx = canvas.getContext('2d');
+            const vars = c.variables;
+            const n = vars.length;
+            const cellSize = 44;
+            const labelSpace = 70;
+            const totalSize = labelSpace + n * cellSize;
+            canvas.width = totalSize;
+            canvas.height = totalSize;
+
+            ctx.clearRect(0, 0, totalSize, totalSize);
+
+            // Draw cells
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const val = c.matrix[i][j];
+                    const x = labelSpace + j * cellSize;
+                    const y = labelSpace + i * cellSize;
+
+                    // Color: blue (negative) → white (0) → red (positive)
+                    let r, g, b;
+                    if (val >= 0) {
+                        r = 239; g = Math.round(68 + (1 - val) * 187); b = Math.round(68 + (1 - val) * 187);
+                    } else {
+                        const av = Math.abs(val);
+                        r = Math.round(59 + (1 - av) * 196); g = Math.round(130 + (1 - av) * 125); b = 246;
+                    }
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+
+                    // Value text
+                    ctx.fillStyle = Math.abs(val) > 0.5 ? '#fff' : '#94A3B8';
+                    ctx.font = '10px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(val.toFixed(2), x + cellSize / 2, y + cellSize / 2);
+                }
+            }
+
+            // Labels
+            ctx.fillStyle = '#CBD5E1';
+            ctx.font = '11px Inter, sans-serif';
+            for (let i = 0; i < n; i++) {
+                // Top labels (rotated)
+                ctx.save();
+                ctx.translate(labelSpace + i * cellSize + cellSize / 2, labelSpace - 8);
+                ctx.rotate(-Math.PI / 4);
+                ctx.textAlign = 'left';
+                ctx.fillText(vars[i], 0, 0);
+                ctx.restore();
+                // Left labels
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(vars[i], labelSpace - 8, labelSpace + i * cellSize + cellSize / 2);
+            }
+
+            // Color scale legend
+            const lx = labelSpace + n * cellSize + 15;
+            const gradient = ctx.createLinearGradient(0, labelSpace, 0, labelSpace + n * cellSize);
+            gradient.addColorStop(0, 'rgb(239,68,68)');
+            gradient.addColorStop(0.5, 'rgb(255,255,255)');
+            gradient.addColorStop(1, 'rgb(59,130,246)');
+
+            // Insights
+            const insightsEl = document.getElementById('correlationInsights');
+            if (c.insights.length > 0) {
+                insightsEl.innerHTML = '<h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Key Correlations Found</h4>' +
+                    c.insights.slice(0, 6).map(ins => {
+                        const color = ins.correlation > 0 ? 'text-red-400' : 'text-blue-400';
+                        const bg = ins.correlation > 0 ? 'bg-red-500/5 border-red-500/20' : 'bg-blue-500/5 border-blue-500/20';
+                        return `<div class="flex items-center gap-3 p-2 rounded-lg border ${bg}">
+                            <span class="font-mono text-xs font-bold ${color}">${ins.correlation > 0 ? '+' : ''}${ins.correlation}</span>
+                            <span class="text-xs text-slate-300">${ins.text}</span>
+                        </div>`;
+                    }).join('');
+            } else {
+                insightsEl.innerHTML = '<p class="text-xs text-slate-500">No strong correlations (|r| > 0.7) detected.</p>';
+            }
+        } catch (e) {
+            console.error('Correlation error:', e);
+        }
+    }
+
+    // ── Health Impact ────────────────────────────────────────────
+    async function loadHealthImpact() {
+        try {
+            const data = await apiFetch(`/api/health-impact/${currentCity}`);
+            const imp = data.impact;
+
+            // Risk badge
+            const badge = document.getElementById('healthRiskBadge');
+            badge.innerText = imp.risk_level;
+            badge.style.color = imp.risk_color;
+            badge.style.background = imp.risk_color + '20';
+            document.getElementById('healthAvgPM').innerText = imp.avg_pm25;
+
+            // Impact cards
+            const impacts = Object.values(imp.impacts);
+            document.getElementById('healthImpactCards').innerHTML = impacts.map(i => `
+                <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/30 text-center card-hover">
+                    <span class="text-2xl block mb-1">${i.icon}</span>
+                    <span class="text-xl font-extrabold text-white block">${typeof i.value === 'number' ? i.value.toLocaleString() : i.value}</span>
+                    <span class="text-[10px] text-slate-500 block">${i.unit}</span>
+                    <span class="text-xs text-slate-400 mt-1 block">${i.label}</span>
+                </div>
+            `).join('');
+
+            // Vulnerable groups
+            document.getElementById('vulnerableGroups').innerHTML = imp.vulnerable_groups.map(g => `
+                <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/20">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-white">${g.group}</span>
+                        <span class="text-xs font-bold text-red-400">${g.multiplier}× risk</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500">${g.note}</p>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('Health impact error:', e);
+        }
+    }
+
+    // ── What-If Simulator ────────────────────────────────────────
+    async function runSimulation() {
+        const trees = document.getElementById('simTrees').value;
+        const traffic = document.getElementById('simTraffic').value;
+        const industrial = document.getElementById('simIndustrial').value;
+        const green = document.getElementById('simGreen').value;
+
+        try {
+            const data = await apiFetch(
+                `/api/whatif/${currentCity}?trees=${trees}&traffic_pct=${traffic}&industrial_pct=${industrial}&green_cover_pct=${green}`
+            );
+            const sim = data.simulation;
+            const container = document.getElementById('simResults');
+
+            container.innerHTML = sim.scenarios.map(s => {
+                const reduction = Math.abs(s.aqi_change);
+                const pctChange = ((reduction / s.current_aqi) * 100).toFixed(1);
+                const barWidth = Math.min(100, (s.projected_aqi / s.current_aqi) * 100);
+                const isCombo = s.scenario === 'All Interventions Combined';
+                const borderClass = isCombo ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-slate-700/30 bg-slate-800/30';
+
+                return `
+                <div class="p-4 rounded-xl border ${borderClass} ${isCombo ? 'ring-1 ring-emerald-500/20' : ''}">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">${s.icon}</span>
+                            <div>
+                                <h4 class="text-sm font-semibold text-white">${s.scenario}</h4>
+                                <p class="text-[10px] text-slate-500">${s.parameter} · ${s.timeframe}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-extrabold text-emerald-400">↓${reduction.toFixed(0)}</span>
+                            <span class="text-[10px] text-slate-500 block">-${pctChange}% AQI</span>
+                        </div>
+                    </div>
+                    <!-- AQI bar comparison -->
+                    <div class="flex items-center gap-3 mt-3">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between text-[10px] mb-1">
+                                <span class="text-slate-500">Current: <span class="text-white font-bold">${s.current_aqi}</span></span>
+                                <span class="text-emerald-400">Projected: <span class="font-bold">${s.projected_aqi}</span></span>
+                            </div>
+                            <div class="h-2 rounded-full bg-slate-700 overflow-hidden relative">
+                                <div class="absolute inset-0 h-full rounded-full bg-red-500/30" style="width: 100%"></div>
+                                <div class="absolute inset-0 h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700" style="width: ${barWidth}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2">${s.description}</p>
+                </div>`;
+            }).join('');
+        } catch (e) {
+            console.error('Simulation error:', e);
+        }
+    }
+    async function loadDSModels() {
+        try {
+            const [regData, clsData] = await Promise.all([
+                apiFetch(`/api/ds-regression/${currentCity}`),
+                apiFetch(`/api/ds-classification/${currentCity}`)
+            ]);
+
+            // Classification UI
+            const clsContainer = document.getElementById('classificationResult');
+            if (clsData.error) {
+                clsContainer.innerHTML = `<p class="text-xs text-slate-500">${clsData.error}</p>`;
+            } else {
+                const riskColor = clsData.is_high_risk ? 'text-red-400' : 'text-emerald-400';
+                const riskIcon = clsData.is_high_risk ? '🚨' : '✅';
+                clsContainer.innerHTML = `
+                    <div class="text-3xl mb-2">${riskIcon}</div>
+                    <div class="text-xl font-bold ${riskColor} mb-1">${clsData.is_high_risk ? 'High Risk Tomorrow' : 'Low Risk Tomorrow'}</div>
+                    <div class="text-[10px] text-slate-400 mb-3">${clsData.advice}</div>
+                    <div class="flex gap-4 text-xs">
+                        <div class="text-center">
+                            <span class="block text-slate-500">Model Accuracy</span>
+                            <span class="font-bold text-white">${clsData.accuracy}%</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="block text-slate-500">Risk Probability</span>
+                            <span class="font-bold text-white">${clsData.current_risk_probability}%</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Regression UI
+            const regContainer = document.getElementById('regressionFeatures');
+            if (regData.error) {
+                regContainer.innerHTML = `<p class="text-xs text-slate-500">${regData.error}</p>`;
+            } else {
+                // Find max absolute weight for scaling bars
+                const maxWeight = Math.max(...regData.feature_importances.map(f => f.magnitude));
+                
+                regContainer.innerHTML = `
+                    <p class="text-[10px] text-indigo-300 mb-3">${regData.explanation}</p>
+                    ${regData.feature_importances.slice(0, 4).map(f => {
+                        const isPos = f.weight > 0;
+                        const barColor = isPos ? 'bg-red-500/80' : 'bg-emerald-500/80';
+                        const textColor = isPos ? 'text-red-400' : 'text-emerald-400';
+                        const pct = (f.magnitude / (maxWeight || 1)) * 100;
+                        return `
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] mb-1">
+                                <span class="text-slate-300">${f.feature}</span>
+                                <span class="${textColor} font-mono font-bold">${isPos ? '+' : ''}${f.weight}</span>
+                            </div>
+                            <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden flex ${isPos ? 'justify-start' : 'justify-end'}">
+                                <div class="h-full rounded-full ${barColor}" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                `;
+            }
+        } catch (e) {
+            console.error('DS Models error:', e);
+        }
+    }
+</script>
+{% endblock %}
