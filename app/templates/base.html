@@ -56,8 +56,11 @@
 <body class="bg-slate-950 text-slate-200 font-sans min-h-screen">
     <div class="flex min-h-screen">
 
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300 opacity-0" onclick="toggleSidebar()"></div>
+
         <!-- ═══════════ SIDEBAR NAV ═══════════ -->
-        <aside class="sidebar-desktop fixed left-0 top-0 h-full w-64 bg-slate-900/80 backdrop-blur-xl border-r border-slate-800/60 z-40 flex flex-col">
+        <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/60 z-50 flex flex-col transition-transform duration-300 ease-in-out transform -translate-x-full lg:translate-x-0">
             <!-- Logo -->
             <div class="p-6 border-b border-slate-800/60">
                 <a href="/" class="flex items-center gap-3 group">
@@ -101,34 +104,20 @@
             </div>
         </aside>
 
-        <!-- ═══════════ MOBILE NAV ═══════════ -->
-        <nav class="mobile-nav fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/60 z-50 justify-around py-2 px-4" style="display: none;">
-            <a href="/" class="flex flex-col items-center gap-1 py-1 px-3 rounded-lg {% if page == 'dashboard' %}text-emerald-400{% else %}text-slate-500{% endif %}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span class="text-[10px]">Dashboard</span>
-            </a>
-            <a href="/map" class="flex flex-col items-center gap-1 py-1 px-3 rounded-lg {% if page == 'map' %}text-emerald-400{% else %}text-slate-500{% endif %}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                <span class="text-[10px]">Map</span>
-            </a>
-            <a href="/insights" class="flex flex-col items-center gap-1 py-1 px-3 rounded-lg {% if page == 'insights' %}text-emerald-400{% else %}text-slate-500{% endif %}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                <span class="text-[10px]">AI</span>
-            </a>
-            <a href="/community" class="flex flex-col items-center gap-1 py-1 px-3 rounded-lg {% if page == 'community' %}text-emerald-400{% else %}text-slate-500{% endif %}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span class="text-[10px]">Community</span>
-            </a>
-        </nav>
 
         <!-- ═══════════ MAIN CONTENT ═══════════ -->
         <main class="flex-1 lg:ml-64 min-h-screen pb-20 lg:pb-0">
             <!-- Top bar -->
             <header class="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/40">
                 <div class="flex items-center justify-between px-6 py-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-white">{% block page_title %}Dashboard{% endblock %}</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">{% block page_subtitle %}Real-time environmental intelligence{% endblock %}</p>
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-xl font-bold text-white">{% block page_title %}Dashboard{% endblock %}</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">{% block page_subtitle %}Real-time environmental intelligence{% endblock %}</p>
+                        </div>
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700/50 text-xs text-slate-400">
@@ -160,6 +149,23 @@
 
     <!-- Global Scripts -->
     <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                // slight delay to allow display block to apply before opacity transition
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
         // Utility: Fetch helper
         async function apiFetch(path) {
             const res = await fetch(path);

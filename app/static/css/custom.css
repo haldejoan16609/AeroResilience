@@ -162,12 +162,4 @@
     background: rgba(15, 23, 42, 0.95) !important;
 }
 
-/* Responsive sidebar collapse */
-@media (max-width: 1024px) {
-    .sidebar-desktop { display: none; }
-    .mobile-nav { display: flex !important; }
-}
 
-@media (min-width: 1025px) {
-    .mobile-nav { display: none !important; }
-}
